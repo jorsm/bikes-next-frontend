@@ -26,6 +26,6 @@
     "eslint-config-next": "12.2.5"
   },
   "engines": {
-    "node": "=16.16.0"
+    "node": "16.16.0"
   }
 }
