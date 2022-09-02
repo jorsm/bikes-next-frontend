@@ -8,7 +8,6 @@ import StartRentMap from "../components/StartRentMap";
 import { useState, useEffect } from "react";
 
 function App() {
-  const [data, setData] = useState("Not Found");
   const [user, setUser] = useState(() => {
     let user = null;
     if (typeof window !== "undefined") {
@@ -48,12 +47,19 @@ function App() {
     getActiveRent().then((rent) => {
       console.log("Rent: " + rent);
       if (rent) setRent(rent?.toString());
+      else setRent(null);
     });
   }, [user]);
   return (
     <>
       <CssBaseline />
-      <MainAppBar />
+      <MainAppBar
+        logout={() => {
+          setUser(null);
+          setRent(null);
+        }}
+        user={user}
+      />
 
       <Box>
         {!rent && (

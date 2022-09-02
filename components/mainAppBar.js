@@ -2,7 +2,8 @@ import { MenuRounded } from "@mui/icons-material";
 import { Box, AppBar, Toolbar, IconButton } from "@mui/material";
 import Menu from "./menu";
 import { useState } from "react";
-export default function MainAppBar() {
+
+export default function MainAppBar({ logout, user }) {
   const [menuOpen, setMenuOpen] = useState(false);
   function toggleDrawer(open) {
     console.log("setting menu open to " + open);
@@ -26,7 +27,12 @@ export default function MainAppBar() {
           </Toolbar>
         </AppBar>
       </Box>
-      <Menu open={menuOpen} toggleDrawer={toggleDrawer} />
+      <Menu
+        open={menuOpen}
+        toggleDrawer={toggleDrawer}
+        logout={logout}
+        user={user}
+      />
     </>
   );
 }

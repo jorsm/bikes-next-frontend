@@ -16,8 +16,9 @@ import GroupAddRoundedIcon from "@mui/icons-material/GroupAddRounded";
 import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
 import RouteRoundedIcon from "@mui/icons-material/RouteRounded";
 import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
-export default function Menu({ open, toggleDrawer }) {
+export default function Menu({ open, toggleDrawer, user, logout }) {
   const iOS =
     typeof navigator !== "undefined" &&
     /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -41,32 +42,26 @@ export default function Menu({ open, toggleDrawer }) {
         onKeyDown={toggle(true)}
       >
         <List>
-          <ListItem key="acc" disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                <ManageAccountsRoundedIcon />
-              </ListItemIcon>
-              <ListItemText primary="account" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="rents" disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                <RouteRoundedIcon />
-              </ListItemIcon>
-              <ListItemText primary="my trips" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem key="guide" disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                <HelpOutlineRoundedIcon />
-              </ListItemIcon>
-              <ListItemText primary="user guide" />
-            </ListItemButton>
-          </ListItem>
-
+          {user && (
+            <ListItem key="acc" disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  <ManageAccountsRoundedIcon />
+                </ListItemIcon>
+                <ListItemText primary="account" />
+              </ListItemButton>
+            </ListItem>
+          )}
+          {user && (
+            <ListItem key="rents" disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  <RouteRoundedIcon />
+                </ListItemIcon>
+                <ListItemText primary="my trips" />
+              </ListItemButton>
+            </ListItem>
+          )}
           <ListItem key="set" disablePadding>
             <ListItemButton>
               <ListItemIcon>
@@ -75,33 +70,55 @@ export default function Menu({ open, toggleDrawer }) {
               <ListItemText primary="settings" />
             </ListItemButton>
           </ListItem>
-          <Divider />
-          <ListItem key="wifc" disablePadding>
+
+          <ListItem key="guide" disablePadding>
             <ListItemButton>
               <ListItemIcon>
-                <GroupAddRoundedIcon />
+                <HelpOutlineRoundedIcon />
               </ListItemIcon>
-              <ListItemText
-                primary="Family-Code"
-                secondary="add members to your subscription"
-              />
+              <ListItemText primary="guide" />
             </ListItemButton>
           </ListItem>
-          <Divider />
+
+          {user && (
+            <ListItem key="rents" disablePadding>
+              <ListItemButton onClick={logout}>
+                <ListItemIcon>
+                  <LogoutRoundedIcon />
+                </ListItemIcon>
+                <ListItemText primary="logout" />
+              </ListItemButton>
+            </ListItem>
+          )}
+          {user && <Divider /> && (
+              <ListItem key="wifc" disablePadding>
+                <ListItemButton>
+                  <ListItemIcon>
+                    <GroupAddRoundedIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="family"
+                    secondary="add members to your subscription"
+                  />
+                </ListItemButton>
+              </ListItem>
+            ) && <Divider />}
         </List>
-        <Paper
-          elevation={6}
-          sx={{
-            position: "fixed",
-            bottom: 0,
-            width: "100%",
-            p: 3,
-            alignContent: "right",
-          }}
-        >
-          <Typography variant="h6">your Family-Code</Typography>
-          <Typography variant="h6">000000</Typography>
-        </Paper>
+        {user && (
+          <Paper
+            elevation={3}
+            sx={{
+              position: "fixed",
+              bottom: 0,
+              width: "100%",
+              p: 3,
+              alignContent: "right",
+            }}
+          >
+            <Typography variant="h6">your Family-Code</Typography>
+            <Typography variant="h6">000000</Typography>
+          </Paper>
+        )}
       </Box>
     </SwipeableDrawer>
   );
