@@ -6,7 +6,14 @@ import IconButton from "@mui/material/IconButton";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import LockOpenRounded from "@mui/icons-material/LockOpenRounded";
 import { QrReader } from "react-qr-reader";
-import { Fab, FormControl, TextField, Stack, Box } from "@mui/material";
+import {
+  Fab,
+  FormControl,
+  TextField,
+  Stack,
+  Box,
+  DialogTitle,
+} from "@mui/material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -28,6 +35,20 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
     p: 3,
     width: 0.8,
   };
+  React.useEffect(() => {
+    if (showQR) {
+      const getVideoStream = async () => {
+        document.querySelector("video").srcObject =
+          await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { facingMode: "environment" },
+          });
+      };
+      getVideoStream();
+    }
+
+    //ToDo: return distructor
+  }, [showQR]);
 
   return (
     <Dialog
@@ -39,28 +60,38 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
       aria-describedby="alert-dialog-slide-description"
       sx={{ minHeight: "100%" }}
     >
-      <IconButton
-        sx={{ position: "absolute", left: "3%", top: "3%", zIndex: 100 }}
-        onClick={() => {
-          setClicked(false);
-          closeDialog();
-        }}
-      >
-        <ArrowBackRoundedIcon />
-      </IconButton>
-      <Box sx={{ pt: 3 }}>
-        {showQR && (
-          <QrReader
-            onResult={(result, error) => {
-              if (!!result) {
-                setCode(result?.text);
-              }
-            }}
-            style={{ width: "100%", height: "100%" }}
-          />
-          //<p>{code}</p>
-        )}
-      </Box>
+      <DialogTitle>
+        <IconButton
+          sx={{ position: "absolute", left: "3%", top: "3%", zIndex: 100 }}
+          onClick={() => {
+            setClicked(false);
+            closeDialog();
+          }}
+        >
+          <ArrowBackRoundedIcon />
+        </IconButton>
+        <Typography variant="h6" sx={{ m: "3%", ml: 4 }}>
+          Start Riding Now!
+        </Typography>
+      </DialogTitle>
+      {showQR && <video autoplay id="qr-video"></video>}
+      {showQR && (
+        <QrReader
+          videoId="qr-video"
+          onResult={(result, error) => {
+            if (result) {
+              setCode(result?.text);
+            }
+          }}
+          videoStyle={{
+            width: "100%",
+            height: "auto",
+          }}
+          containerStyle={{ borderRadius: "25px", m: 0 }}
+        />
+        //<p>{code}</p>
+      )}
+
       <Typography
         align="center"
         variant="subtitle2"
