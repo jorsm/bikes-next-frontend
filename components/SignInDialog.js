@@ -1,28 +1,19 @@
 import * as React from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Slide from "@mui/material/Slide";
-import Fab from "@mui/material/Fab";
-import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import PersonAddRoundedIcon from "@mui/icons-material/PersonAddRounded";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useState } from "react";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import NativeSelect from "@mui/material/NativeSelect";
-import Checkbox from "@mui/material/Checkbox";
+import {
+  FormControl,
+  Dialog,
+  DialogTitle,
+  Slide,
+  Fab,
+  CircularProgress,
+  IconButton,
+  TextField,
+} from "@mui/material";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { Stack } from "@mui/system";
-import { Divider, TextField } from "@mui/material";
-import Snackbar from "@mui/material/Snackbar";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Unstable_Grid2";
+
 import OtpDialog from "./OtpDialog";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -40,9 +31,9 @@ const style = {
 
 export default function SignInDialog({ open, closeDialog, signInUser }) {
   var [clicked, setClicked] = useState(false);
-
   var [phone, setPhone] = useState("");
   var [error, setError] = useState(null);
+  var [correctOtp, setCorrectOtp] = useState(null);
   var [otpDialogOpen, setOtpDialogOpen] = useState(false);
 
   const getOtp = () => {
@@ -64,12 +55,15 @@ export default function SignInDialog({ open, closeDialog, signInUser }) {
         );
         if (!response) throw new Error("Network Error");
         if (!response?.ok) throw new Error("HTTP Error " + response.status);
-
+        console.log("getting JSON from res...");
+        let resJson = await response.json();
+        if (resJson.otp) setCorrectOtp(resJson.otp);
+        console.log(correctOtp);
         setOtpDialogOpen(true);
-        console.log(response);
       } catch (error) {
         console.error(error.message);
       }
+      return;
     };
     getOTP();
   };
@@ -94,8 +88,11 @@ export default function SignInDialog({ open, closeDialog, signInUser }) {
         >
           <ArrowBackRoundedIcon />
         </IconButton>
+
         <Stack sx={{ p: 3, mt: 6 }}>
-          <p>sign up with your phone number* to get one hour free </p>
+          <DialogTitle align="center" gutterBottom={true}>
+            Welcome! sign up and ride up to <b>one hour for free </b>
+          </DialogTitle>
 
           <FormControl sx={{ mb: 4, mt: 4 }}>
             <TextField
@@ -110,8 +107,7 @@ export default function SignInDialog({ open, closeDialog, signInUser }) {
               prefix="+"
             />
           </FormControl>
-          <Divider />
-          <Divider />
+
           <Fab
             variant="extended"
             sx={style}
@@ -136,7 +132,7 @@ export default function SignInDialog({ open, closeDialog, signInUser }) {
           </Fab>
         </Stack>
       </Dialog>
-      {clicked && (
+      {clicked && correctOtp && (
         <OtpDialog
           keepMounted
           open={otpDialogOpen}
@@ -147,6 +143,7 @@ export default function SignInDialog({ open, closeDialog, signInUser }) {
           signInUser={signInUser}
           retryOtp={getOtp}
           phone={phone}
+          correctOtp={correctOtp}
         />
       )}
     </div>

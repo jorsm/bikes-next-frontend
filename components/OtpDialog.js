@@ -1,21 +1,25 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import Slide from "@mui/material/Slide";
-import Fab from "@mui/material/Fab";
-import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import { ArrowBackRounded, Close } from "@mui/icons-material";
 import { useState } from "react";
-import FormControl from "@mui/material/FormControl";
-import NativeSelect from "@mui/material/NativeSelect";
-import Checkbox from "@mui/material/Checkbox";
 import { Stack } from "@mui/system";
-import { TextField } from "@mui/material";
-import Snackbar from "@mui/material/Snackbar";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
+import {
+  FormControl,
+  Dialog,
+  DialogTitle,
+  Slide,
+  Fab,
+  CircularProgress,
+  Typography,
+  Link,
+  IconButton,
+  TextField,
+  Divider,
+  Alert,
+  AlertTitle,
+  Snackbar,
+} from "@mui/material";
+
+import { StatusCodes } from "http-status-codes";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -29,15 +33,20 @@ export default function OtpDialog({
   signInUser,
   retryOtp,
   phone,
+  correctOtp,
 }) {
   //# state
   var [clicked, setClicked] = useState(false);
   var [otp, setOtp] = useState("");
   var [error, setError] = useState(null);
-  var [newUser, setNewUser] = useState(null);
+  var [newUser, setNewUser] = useState(true);
 
   //# api call
   const signIn = async () => {
+    if (otp.length != 6) {
+      setError("Please enter the 6 digits code received via SMS");
+      return;
+    }
     setClicked(true);
 
     let _phone = phone.startsWith("+") ? phone : "+" + phone;
@@ -54,16 +63,35 @@ export default function OtpDialog({
         process.env.API_URL + "/users/verify",
         options
       );
-      if (!response) throw new Error("Network Error");
-      if (!response?.ok) throw new Error("HTTP Error " + response.status);
-      if (response.status == 204) setNewUser(true);
+      if (!response) setError("Network Error");
+      if (!response?.ok) {
+        console.error("HTTP Error " + response.status);
+        if (response.status == StatusCodes.UNAUTHORIZED)
+          //Unauthorized
+          setError(
+            "code NOT valid, please retry or click con the link to receive a new one"
+          );
+        setClicked(false);
+        return;
+      }
+      if (response.status != StatusCodes.CREATED) setNewUser(false);
       response.json().then((res) => {
-        signInUser(res.token);
-        closeDialog();
+        if (res.token) {
+          signInUser(res.token);
+          closeDialog();
+        } else {
+          setError(
+            "Something went wrong, can't authenticate user please retry"
+          );
+          setClicked(false);
+          return;
+        }
         console.log(res);
       });
     } catch (error) {
       setError(error.message);
+      setClicked(false);
+      return;
     }
   };
   //# component
@@ -85,10 +113,33 @@ export default function OtpDialog({
             closeDialog();
           }}
         >
-          <ArrowBackRoundedIcon />
+          <ArrowBackRounded />
         </IconButton>
-        <DialogTitle>Enter SMS code</DialogTitle>
+        {error && (
+          <Alert
+            severity="error"
+            action={
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  setError(null);
+                }}
+              >
+                <Close fontSize="inherit" />
+              </IconButton>
+            }
+          >
+            {error.toString()}
+          </Alert>
+        )}
+        <Alert severity="info">
+          <AlertTitle>SMS Received:</AlertTitle>
+          your OTP code is {correctOtp}
+        </Alert>
         <Stack sx={{ p: 2, mt: 4 }}>
+          <DialogTitle>Enter SMS code</DialogTitle>
           <FormControl>
             <TextField
               label="Required"
@@ -100,7 +151,8 @@ export default function OtpDialog({
               sx={{ mb: 4, mt: 4 }}
             />
           </FormControl>
-          {newUser && <PrivacyAndTerms clicked={clicked} />}
+          {newUser && <PrivacyAndTerms />}
+          <Divider sx={{ pt: 1, pb: 1 }} />
           <Typography align="center" variant="subtitle2" gutterBottom={true}>
             if you did not receive the code{" "}
             <Link href="#" underline="hover" onClick={retryOtp}>
@@ -116,7 +168,7 @@ export default function OtpDialog({
             onClick={signIn}
           >
             {!clicked ? (
-              "check"
+              "check OTP"
             ) : (
               <>
                 <CircularProgress
@@ -137,38 +189,15 @@ export default function OtpDialog({
   );
 }
 
-function PrivacyAndTerms(clicked) {
-  var [termsAccepted, setTermsAccepted] = useState(false);
+function PrivacyAndTerms() {
   return (
     <>
-      <Typography align="center" variant="subtitle1" gutterBottom={true}>
-        Wolcome! enter the code and get your first hour for free
+      <Typography align="center" variant="subtitle2" gutterBottom={true}>
+        by clicking on the button below you are <b>accepting</b> our{" "}
+        <Link href="#" underline="hover">
+          Terms & Conditions
+        </Link>{" "}
       </Typography>
-
-      <div>
-        <p>
-          Accetto{" "}
-          <Link href="#" underline="hover">
-            Termini & Condizioni
-          </Link>{" "}
-          <Checkbox
-            defaultChecked={false}
-            required
-            onChange={() => setTermsAccepted(!termsAccepted)}
-          />{" "}
-        </p>
-      </div>
-      <Snackbar
-        open={clicked && !termsAccepted}
-        autoHideDuration={4000}
-        message="please accept Terms & Conditions"
-        action={
-          <Button color="inherit" size="small">
-            ok
-          </Button>
-        }
-        sx={{ bottom: { xs: 90, sm: 30 } }}
-      />
     </>
   );
 }

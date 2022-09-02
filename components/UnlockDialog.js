@@ -1,21 +1,12 @@
 import * as React from "react";
-import PropTypes from "prop-types";
-import { Global } from "@emotion/react";
-import { styled } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import { grey } from "@mui/material/colors";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Skeleton from "@mui/material/Skeleton";
 import Typography from "@mui/material/Typography";
-import SwipeableDrawer from "@mui/material/SwipeableDrawer";
-import Slide from "@mui/material/Slide";
 import Dialog from "@mui/material/Dialog";
+import Slide from "@mui/material/Slide";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import LockOpenRounded from "@mui/icons-material/LockOpenRounded";
 import { QrReader } from "react-qr-reader";
-import { Fab, FormControl, TextField } from "@mui/material";
+import { Fab, FormControl, TextField, Stack, Box } from "@mui/material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -49,7 +40,7 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
       sx={{ minHeight: "100%" }}
     >
       <IconButton
-        sx={{ position: "absolute", left: "3%", top: "3%" }}
+        sx={{ position: "absolute", left: "3%", top: "3%", zIndex: 100 }}
         onClick={() => {
           setClicked(false);
           closeDialog();
@@ -57,8 +48,8 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
       >
         <ArrowBackRoundedIcon />
       </IconButton>
-      {showQR && (
-        <Box sx={{ mt: 4, pt: 0 }}>
+      <Box sx={{ pt: 3 }}>
+        {showQR && (
           <QrReader
             onResult={(result, error) => {
               if (!!result) {
@@ -67,9 +58,9 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
             }}
             style={{ width: "100%", height: "100%" }}
           />
-          <p>{code}</p>
-        </Box>
-      )}
+          //<p>{code}</p>
+        )}
+      </Box>
       <Typography
         align="center"
         variant="subtitle2"
