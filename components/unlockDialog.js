@@ -41,20 +41,23 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
         try {
           let camera = await navigator.mediaDevices.getUserMedia({
             audio: false,
-            video: { facingMode: "environment" },
+            video: {
+              facingMode: {
+                exact: "environment",
+              },
+            },
           });
           if (camera) document.querySelector("video").srcObject = camera;
           else console.error("please accept camera usage"); //ToDo: add dialog to fail graicfully
         } catch (err) {}
 
         return () => {
+          //ToDo: return distructor
           document.querySelector("video").srcObject = null;
         };
       };
       getVideoStream();
     }
-
-    //ToDo: return distructor
   }, [showQR]);
 
   return (
@@ -63,7 +66,10 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
       open={open}
       TransitionComponent={Transition}
       keepMounted
-      onClose={closeDialog}
+      onClose={() => {
+        setShowQR(null);
+        closeDialog();
+      }}
       aria-describedby="alert-dialog-slide-description"
       sx={{ minHeight: "100%" }}
     >
