@@ -49,7 +49,8 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
             },
           },
         });
-        if (camera) videoElement.srcObject = camera;
+        console.log(camera);
+        if (camera && videoElement) videoElement.srcObject = camera;
         else console.error("please accept camera usage"); //ToDo: add dialog to fail graicfully
       } catch (err) {
         console.error(err);
