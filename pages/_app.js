@@ -3,7 +3,7 @@ import { CssBaseline, Box } from "@mui/material";
 import MainAppBar from "../components/mainAppBar";
 import StartRentButton from "../components/startRentButton";
 import EndRentButton from "../components/endRentButton";
-import StartRentMap from "../components/StartRentMap";
+import StartRentMap from "../components/startRentMap";
 
 import { useState, useEffect } from "react";
 

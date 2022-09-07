@@ -13,7 +13,7 @@ import {
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { Stack } from "@mui/system";
 
-import OtpDialog from "./OtpDialog";
+import OtpDialog from "./otpDialog";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;

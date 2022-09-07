@@ -1,9 +1,9 @@
 import { Fab } from "@mui/material";
 import { LockOpenRounded } from "@mui/icons-material";
 import { useState } from "react";
-import SignInDialog from "./SignInDialog";
+import SignInDialog from "./signInDialog";
 import jwtDecode from "jwt-decode";
-import UnlockDialog from "./UnlockDialog";
+import UnlockDialog from "./unlockDialog";
 
 const style = {
   display: "flex",

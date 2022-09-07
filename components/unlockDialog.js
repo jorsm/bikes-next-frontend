@@ -38,11 +38,18 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
   React.useEffect(() => {
     if (showQR) {
       const getVideoStream = async () => {
-        document.querySelector("video").srcObject =
-          await navigator.mediaDevices.getUserMedia({
+        try {
+          let camera = await navigator.mediaDevices.getUserMedia({
             audio: false,
             video: { facingMode: "environment" },
           });
+          if (camera) document.querySelector("video").srcObject = camera;
+          else console.error("please accept camera usage"); //ToDo: add dialog to fail graicfully
+        } catch (err) {}
+
+        return () => {
+          document.querySelector("video").srcObject = null;
+        };
       };
       getVideoStream();
     }
@@ -74,7 +81,7 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
           Start Riding Now!
         </Typography>
       </DialogTitle>
-      {showQR && <video autoplay id="qr-video"></video>}
+      {showQR && <video autoPlay id="qr-video"></video>}
       {showQR && (
         <QrReader
           videoId="qr-video"
