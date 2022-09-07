@@ -87,7 +87,7 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
           Start Riding Now!
         </Typography>
       </DialogTitle>
-      {showQR && <video autoPlay id="qr-video"></video>}
+
       {showQR && (
         <QrReader
           videoId="qr-video"
@@ -102,8 +102,8 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
           }}
           containerStyle={{ borderRadius: "25px", m: 0 }}
         />
-        //<p>{code}</p>
       )}
+      <p>{code}</p>
 
       <Typography
         align="center"
