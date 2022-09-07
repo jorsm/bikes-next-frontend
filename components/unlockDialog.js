@@ -36,28 +36,39 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
     width: 0.8,
   };
   React.useEffect(() => {
-    if (showQR) {
-      const getVideoStream = async () => {
-        try {
-          let camera = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-              facingMode: {
-                exact: "environment",
-              },
+    var videoElement = document.getElementById("qr-video");
+    var camera = null;
+    const getVideoStream = async () => {
+      try {
+        videoElement = document.getElementById("qr-video");
+        camera = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: {
+              exact: "environment",
             },
-          });
-          if (camera) document.querySelector("video").srcObject = camera;
-          else console.error("please accept camera usage"); //ToDo: add dialog to fail graicfully
-        } catch (err) {}
-
-        return () => {
-          //ToDo: return distructor
-          document.querySelector("video").srcObject = null;
-        };
-      };
-      getVideoStream();
+          },
+        });
+        if (camera) videoElement.srcObject = camera;
+        else console.error("please accept camera usage"); //ToDo: add dialog to fail graicfully
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (showQR) getVideoStream();
+    else {
+      if (camera)
+        camera.getTracks().forEach(function (track) {
+          track.stop();
+        });
     }
+    return () => {
+      if (camera) {
+        camera.getTracks().forEach(function (track) {
+          track.stop();
+        });
+      }
+    };
   }, [showQR]);
 
   return (
