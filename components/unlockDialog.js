@@ -19,7 +19,51 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function UnlockDialog({ closeDialog, open, user, setRent }) {
+const ViewFinder = () => (
+  <>
+    <svg
+      width="50px"
+      viewBox="0 0 100 100"
+      style={{
+        top: 0,
+        left: 0,
+        zIndex: 1,
+        boxSizing: "border-box",
+        border: "50px solid rgba(0, 0, 0, 0.3)",
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <path
+        fill="none"
+        d="M13,0 L0,0 L0,13"
+        stroke="rgba(255, 0, 0, 0.5)"
+        strokeWidth="5"
+      />
+      <path
+        fill="none"
+        d="M0,87 L0,100 L13,100"
+        stroke="rgba(255, 0, 0, 0.5)"
+        strokeWidth="5"
+      />
+      <path
+        fill="none"
+        d="M87,100 L100,100 L100,87"
+        stroke="rgba(255, 0, 0, 0.5)"
+        strokeWidth="5"
+      />
+      <path
+        fill="none"
+        d="M100,13 L100,0 87,0"
+        stroke="rgba(255, 0, 0, 0.5)"
+        strokeWidth="5"
+      />
+    </svg>
+  </>
+);
+
+export default function UnlockDialog({ closeDialog, open, user, setRent }) {
   const [clicked, setClicked] = React.useState(false);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -35,41 +79,36 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
     p: 3,
     width: 0.8,
   };
+
+  const videoElement = React.useRef(null);
+  var qrProps = {
+    videoId: "qr-video",
+    scanDelay: 500,
+    videoStyle: {
+      width: "100%",
+      height: "auto",
+    },
+    containerStyle: { borderRadius: "25px", m: 0 },
+    constraints: {
+      facingMode: "environment",
+    },
+    ref: videoElement,
+  };
+
   React.useEffect(() => {
     var cameraStream = null;
-    const getVideoStream = async () => {
-      try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            facingMode: {
-              exact: "environment",
-            },
-          },
-        });
-        console.log(cameraStream);
-        if (cameraStream && videoElement) videoElement.srcObject = cameraStream;
-        else console.error("please accept camera usage"); //ToDo: add dialog to fail graicfully
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    if (showQR) getVideoStream();
-    else {
+    function stopCameraStream() {
+      cameraStream = videoElement?.srcObject;
+      console.log(videoElement);
       if (cameraStream)
         cameraStream.getTracks().forEach(function (track) {
           track.stop();
         });
     }
-    return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(function (track) {
-          track.stop();
-        });
-      }
-    };
-  }, [showQR]);
+    if (!showQR) stopCameraStream();
 
+    return () => stopCameraStream();
+  }, [showQR]);
   return (
     <Dialog
       fullScreen
@@ -100,24 +139,16 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
 
       {showQR && (
         <QrReader
-          videoId="qr-video"
+          {...qrProps}
           onResult={(result, error) => {
             if (result) {
               setCode(result?.text);
             }
+            if (error) setError(error.message);
           }}
-          videoStyle={{
-            width: "100%",
-            height: "auto",
-          }}
-          containerStyle={{ borderRadius: "25px", m: 0 }}
         />
       )}
-      {showQR && (
-        <script type="text/javascript">
-          var videoElement = document.getElementById(&#39qr-vide&#39);
-        </script>
-      )}
+
       <p>{code}</p>
 
       <Typography
@@ -176,5 +207,3 @@ function UnlockDialog({ closeDialog, open, user, setRent }) {
     </Dialog>
   );
 }
-
-export default UnlockDialog;
