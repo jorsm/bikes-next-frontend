@@ -2,9 +2,10 @@
 // in the browser and is executed during hydration
 import { useEffect, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { Box, CircularProgress } from "@mui/material";
 
 export default function PaymentDialog() {
-  // The default value is 'blue', it will be used during pre-rendering and the first render in the browser (hydration)
+  // The default value will be used during pre-rendering and the first render in the browser (hydration)
   const [paypalButton, setPaypalButton] = useState(null);
   // During hydration `useEffect` is called. `window` is available in `useEffect`. In this case because we know
   //we're in the browser checking for window is not needed. If you need to read something from window that is fine.
@@ -14,16 +15,25 @@ export default function PaymentDialog() {
     () => setPaypalButton(<PayPalButtons style={{ layout: "horizontal" }} />),
     []
   );
-
+  const [loading, setLoading] = useState(true);
+  const style = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    bgcolor: "background.paper",
+  };
   return (
-    <PayPalScriptProvider
-      options={{
-        "client-id":
-          "AaRJRMeGZjupaPdMC9ogvD2c84Mx5L-D-KHG5TUpltTgn_qIaT2fPg_rtXwIUfidRmFO8hrX-7cmv2La",
-        debug: true,
-        vault: true,
-        "data-client-token": user,
-      }}
-    ></PayPalScriptProvider>
+    <Box sx={style}>
+      {loading && <CircularProgress />}
+      <PayPalScriptProvider
+        options={{
+          "client-id":
+            "AaRJRMeGZjupaPdMC9ogvD2c84Mx5L-D-KHG5TUpltTgn_qIaT2fPg_rtXwIUfidRmFO8hrX-7cmv2La",
+          debug: true,
+          vault: true,
+          "data-client-token": "",
+        }}
+      ></PayPalScriptProvider>
+    </Box>
   );
 }

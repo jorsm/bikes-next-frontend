@@ -26,7 +26,6 @@ export default function EndRentButton({ user, rent, setRent }) {
       },
     };
     try {
-      console.log(JSON.stringify(JSON.stringify(rent)));
       const response = await fetch(
         process.env.API_URL + "/bikes/return/" + rent.toString(),
         options

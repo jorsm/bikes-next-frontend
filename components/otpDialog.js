@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 
 import { StatusCodes } from "http-status-codes";
+import DialogBase from "./dialogBase";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -94,27 +95,11 @@ export default function OtpDialog({
       return;
     }
   };
+  let dialogProps = { open, closeDialog, title: "Enter SMS code" };
   //# component
   return (
     <div>
-      <Dialog
-        fullScreen
-        open={open}
-        TransitionComponent={Transition}
-        keepMounted
-        onClose={closeDialog}
-        aria-describedby="alert-dialog-slide-description"
-        sx={{ minHeight: "100%" }}
-      >
-        <IconButton
-          sx={{ position: "absolute", left: "3%", top: "3%" }}
-          onClick={() => {
-            setClicked(false);
-            closeDialog();
-          }}
-        >
-          <ArrowBackRounded />
-        </IconButton>
+      <DialogBase {...dialogProps}>
         {error && (
           <Alert
             severity="error"
@@ -139,7 +124,6 @@ export default function OtpDialog({
           your OTP code is {correctOtp}
         </Alert>
         <Stack sx={{ p: 2, mt: 4 }}>
-          <DialogTitle>Enter SMS code</DialogTitle>
           <FormControl>
             <TextField
               label="Required"
@@ -184,7 +168,7 @@ export default function OtpDialog({
             )}
           </Fab>
         </Stack>
-      </Dialog>
+      </DialogBase>
     </div>
   );
 }

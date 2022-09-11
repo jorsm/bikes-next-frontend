@@ -1,9 +1,9 @@
 import { Fab } from "@mui/material";
 import { LockOpenRounded } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SignInDialog from "./signInDialog";
-import jwtDecode from "jwt-decode";
 import UnlockDialog from "./unlockDialog";
+import PaymentDialog from "./paymentDialog";
 
 const style = {
   display: "flex",
@@ -19,6 +19,39 @@ const style = {
 export default function StartRentButton({ user, setUser, setRent }) {
   const [signInDialogOpen, setSignInDialogOpen] = useState(false);
   const [unlockDialogOpen, setUnlockDialogOpen] = useState(false);
+  const [subscription, setSubscription] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+
+  useEffect(() => {
+    async function getActiveSubscription() {
+      if (user) {
+        const options = {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user}`,
+          },
+        };
+        try {
+          const response = await fetch(
+            process.env.API_URL + "/users/subscription/",
+            options
+          );
+          if (!response) throw new Error("Network Error");
+          if (!response?.ok) throw new Error("HTTP Error " + response.status);
+
+          const { subscription } = await response.json();
+          return subscription;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+    getActiveSubscription().then((subscription) => {
+      if (subscription) setSubscription(subscription?.toString());
+      else setSubscription(null);
+    });
+  }, [user]);
 
   const signInUser = function (token) {
     if (typeof window !== "undefined") {
@@ -39,7 +72,17 @@ export default function StartRentButton({ user, setUser, setRent }) {
           signInUser={signInUser}
         />
       )}
-      {user && unlockDialogOpen && (
+      {user && !subscription && paymentDialogOpen && (
+        <PaymentDialog
+          closeDialog={() => {
+            setPaymentDialogOpen(false);
+          }}
+          open={setPaymentDialogOpen}
+          user={user}
+          setRent={setRent}
+        />
+      )}
+      {user && subscription && unlockDialogOpen && (
         <UnlockDialog
           closeDialog={() => {
             setUnlockDialogOpen(false);
@@ -53,9 +96,15 @@ export default function StartRentButton({ user, setUser, setRent }) {
         variant="extended"
         sx={style}
         onClick={() => {
-          console.log("choosing ialog because " + JSON.stringify(user) + !user);
-          if (!user) setSignInDialogOpen(true);
-          else setUnlockDialogOpen(true);
+          if (!user) {
+            setSignInDialogOpen(true);
+            return;
+          }
+          if (user && !subscription) {
+            setPaymentDialogOpen(true);
+            return;
+          }
+          setUnlockDialogOpen(true);
         }}
       >
         <LockOpenRounded sx={{ mr: 1 }} /> Unlock Bike

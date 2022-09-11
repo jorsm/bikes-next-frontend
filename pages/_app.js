@@ -31,7 +31,7 @@ function App() {
         };
         try {
           const response = await fetch(
-            process.env.API_URL + "/users/active-rent/",
+            process.env.API_URL + "/users/rent/",
             options
           );
           if (!response) throw new Error("Network Error");
@@ -45,7 +45,6 @@ function App() {
       }
     }
     getActiveRent().then((rent) => {
-      console.log("Rent: " + rent);
       if (rent) setRent(rent?.toString());
       else setRent(null);
     });

@@ -5,71 +5,20 @@ import Slide from "@mui/material/Slide";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import LockOpenRounded from "@mui/icons-material/LockOpenRounded";
-import { QrReader } from "react-qr-reader";
-import {
-  Fab,
-  FormControl,
-  TextField,
-  Stack,
-  Box,
-  DialogTitle,
-} from "@mui/material";
+import { QrReader, UseQrReaderHook } from "react-qr-reader";
+import { Fab, FormControl, TextField, DialogTitle } from "@mui/material";
+import DialogBase from "./dialogBase";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const ViewFinder = () => (
-  <>
-    <svg
-      width="50px"
-      viewBox="0 0 100 100"
-      style={{
-        top: 0,
-        left: 0,
-        zIndex: 1,
-        boxSizing: "border-box",
-        border: "50px solid rgba(0, 0, 0, 0.3)",
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      <path
-        fill="none"
-        d="M13,0 L0,0 L0,13"
-        stroke="rgba(255, 0, 0, 0.5)"
-        strokeWidth="5"
-      />
-      <path
-        fill="none"
-        d="M0,87 L0,100 L13,100"
-        stroke="rgba(255, 0, 0, 0.5)"
-        strokeWidth="5"
-      />
-      <path
-        fill="none"
-        d="M87,100 L100,100 L100,87"
-        stroke="rgba(255, 0, 0, 0.5)"
-        strokeWidth="5"
-      />
-      <path
-        fill="none"
-        d="M100,13 L100,0 87,0"
-        stroke="rgba(255, 0, 0, 0.5)"
-        strokeWidth="5"
-      />
-    </svg>
-  </>
-);
-
 export default function UnlockDialog({ closeDialog, open, user, setRent }) {
-  const [clicked, setClicked] = React.useState(false);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [code, setCode] = React.useState("");
   const [showQR, setShowQR] = React.useState(true);
-  const style = {
+
+  const buttonStyle = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -80,7 +29,6 @@ export default function UnlockDialog({ closeDialog, open, user, setRent }) {
     width: 0.8,
   };
 
-  const videoElement = React.useRef(null);
   var qrProps = {
     videoId: "qr-video",
     scanDelay: 500,
@@ -88,55 +36,48 @@ export default function UnlockDialog({ closeDialog, open, user, setRent }) {
       width: "100%",
       height: "auto",
     },
-    containerStyle: { borderRadius: "25px", m: 0 },
     constraints: {
       facingMode: "environment",
     },
-    ref: videoElement,
   };
 
-  React.useEffect(() => {
-    var cameraStream = null;
-    function stopCameraStream() {
-      cameraStream = videoElement?.srcObject;
-      console.log(videoElement);
-      if (cameraStream)
-        cameraStream.getTracks().forEach(function (track) {
-          track.stop();
-        });
+  const dialogProps = {
+    closeDialog: () => {
+      setShowQR(null);
+      closeDialog();
+    },
+    open: open,
+    title: "Start riding now!",
+  };
+
+  const unlockBike = async () => {
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user}`,
+      },
+    };
+    try {
+      const response = await fetch(
+        process.env.API_URL + "/bikes/rent/" + code,
+        options
+      );
+      if (!response) throw new Error("Network Error");
+      if (!response?.ok) throw new Error("HTTP Error " + response.status);
+
+      const { rentId } = await response.json();
+      setRent(rentId);
+      console.log("rent started! " + JSON.stringify(rentId));
+
+      closeDialog();
+    } catch (error) {
+      setError(error.message);
     }
-    if (!showQR) stopCameraStream();
+  };
 
-    return () => stopCameraStream();
-  }, [showQR]);
   return (
-    <Dialog
-      fullScreen
-      open={open}
-      TransitionComponent={Transition}
-      keepMounted
-      onClose={() => {
-        setShowQR(null);
-        closeDialog();
-      }}
-      aria-describedby="alert-dialog-slide-description"
-      sx={{ minHeight: "100%" }}
-    >
-      <DialogTitle>
-        <IconButton
-          sx={{ position: "absolute", left: "3%", top: "3%", zIndex: 100 }}
-          onClick={() => {
-            setClicked(false);
-            closeDialog();
-          }}
-        >
-          <ArrowBackRoundedIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ m: "3%", ml: 4 }}>
-          Start Riding Now!
-        </Typography>
-      </DialogTitle>
-
+    <DialogBase {...dialogProps}>
       {showQR && (
         <QrReader
           {...qrProps}
@@ -173,37 +114,9 @@ export default function UnlockDialog({ closeDialog, open, user, setRent }) {
           }}
         />
       </FormControl>
-      <Fab
-        variant="extended"
-        sx={style}
-        onClick={async () => {
-          const options = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${user}`,
-            },
-          };
-          try {
-            const response = await fetch(
-              process.env.API_URL + "/bikes/rent/" + code,
-              options
-            );
-            if (!response) throw new Error("Network Error");
-            if (!response?.ok) throw new Error("HTTP Error " + response.status);
-
-            const { rentId } = await response.json();
-            setRent(rentId);
-            console.log("rent started! " + JSON.stringify(rentId));
-
-            closeDialog();
-          } catch (error) {
-            setError(error.message);
-          }
-        }}
-      >
+      <Fab variant="extended" sx={buttonStyle} onClick={unlockBike}>
         <LockOpenRounded sx={{ mr: 1 }} /> Unlock Bike
       </Fab>
-    </Dialog>
+    </DialogBase>
   );
 }
