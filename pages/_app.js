@@ -1,5 +1,4 @@
 import { CssBaseline, Box } from "@mui/material";
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 import MainAppBar from "../components/mainAppBar";
 import StartRentButton from "../components/startRentButton";

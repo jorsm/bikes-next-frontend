@@ -1,9 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  PayPalButtons,
-  PayPalScriptProvider,
-  usePayPalScriptReducer,
-} from "@paypal/react-paypal-js";
+import { useEffect, useState, useCallback } from "react";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import {
   Alert,
   AlertTitle,
@@ -15,17 +11,17 @@ import {
   ListItem,
   Typography,
   CardActionArea,
+  Fab,
+  Dialog,
 } from "@mui/material";
 import DialogBase from "./dialogBase";
+import { Stack } from "@mui/system";
+import { AlignHorizontalCenter } from "@mui/icons-material";
 
 export default function PaymentDialog(props) {
-  // The default value will be used during pre-rendering and the first render in the browser (hydration)
-  // During hydration `useEffect` is called. `window` is available in `useEffect`. In this case because we know
-  //we're in the browser checking for window is not needed. If you need to read something from window that is fine.
-  // By calling `setButton` in `useEffect` a render is triggered after hydrating, this causes the "browser specific" value
-  //to be available.
   const [paypalButton, setPaypalButton] = useState(null);
   const [subscriptionPeriod, setsubscriptionPeriod] = useState("Day");
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
 
   const payPalCredentials = {
     sandboxAccountEmail: "sb-f47wqs20698611@personal.example.com",
@@ -33,48 +29,16 @@ export default function PaymentDialog(props) {
     clientID:
       "AaRJRMeGZjupaPdMC9ogvD2c84Mx5L-D-KHG5TUpltTgn_qIaT2fPg_rtXwIUfidRmFO8hrX-7cmv2La",
   };
-  useEffect(
-    () =>
-      setPaypalButton(
-        <Box sx={{ p: 3 }}>
-          <PayPalButtons
-            style={{
-              shape: "pill",
-              color: "blue", //black
-              layout: "horizontal",
-              label: "pay",
-              tagline: false,
-            }}
-          />
-        </Box>
-      ),
-    []
-  );
-  const createOrder = () => {
-    const getNewSubscriptionOrderID = async () => {
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user}`,
-        },
-        body: JSON.stringify({ subscriptionPeriod }),
-      };
-      try {
-        const response = await fetch(
-          process.env.API_URL + "/users/subscription/",
-          options
-        );
-        if (!response) throw new Error("Network Error");
-        if (!response?.ok) throw new Error("HTTP Error " + response.status);
-        const orderId = await response.json().then(({ orderID }) => orderID);
-        return orderId;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    return getNewSubscriptionOrderID();
-  };
+
+  useEffect(() => {
+    setPaypalButton(
+      <PayPalButtonWrapper
+        subscriptionPeriod={subscriptionPeriod}
+        user={props.user}
+        setTransactionDialogOpen={setTransactionDialogOpen}
+      />
+    );
+  }, [subscriptionPeriod]);
 
   return (
     <DialogBase {...props} title="Sign up and start riding now!">
@@ -84,8 +48,10 @@ export default function PaymentDialog(props) {
           Email: <b>{payPalCredentials.sandboxAccountEmail} </b>
           <br></br>
           Password: <b>{payPalCredentials.sandboxAccountPassword} </b>
+          <br></br> other accounts will NOT work
         </AlertTitle>
       </Alert>
+      <TransactionComplitionDilog open={transactionDialogOpen} />
       <List>
         <ListItem key="day">
           <SubscriptionCard
@@ -118,18 +84,10 @@ export default function PaymentDialog(props) {
       <PayPalScriptProvider
         options={{
           "client-id": payPalCredentials.clientID,
-          components: "buttons",
-          //intent: "subscription",
-          debug: true,
-          vault: true,
-        }}
-        createOrder={createOrder}
-        onApprove={function (data, actions) {
-          return actions.order.capture().then(function () {
-            // transaction completed let the user rent the bike
-          });
+          currency: "EUR",
         }}
       >
+        {!paypalButton && <CircularProgress sx={{ justifySelf: "center" }} />}
         {paypalButton}
       </PayPalScriptProvider>
     </DialogBase>
@@ -176,3 +134,99 @@ const SubscriptionCard = function ({
     </Card>
   );
 };
+
+function PayPalButtonWrapper({
+  subscriptionPeriod,
+  user,
+  setTransactionDialogOpen,
+}) {
+  let orderID = "";
+  let createOrder = () => {
+    async function getNewSubscriptionOrderID() {
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user}`,
+        },
+        body: JSON.stringify({ subscriptionPeriod }),
+      };
+      try {
+        setTransactionDialogOpen(true);
+        const response = await fetch(
+          process.env.API_URL + "/users/subscription/",
+          options
+        );
+        if (!response) throw new Error("Network Error");
+        if (!response?.ok) throw new Error("HTTP Error " + response.status);
+        return await response.json().then((json) => {
+          orderID = json.orderID;
+          return json.orderID;
+        });
+      } catch (error) {
+        setTransactionDialogOpen(false);
+        console.error(error);
+      }
+    }
+    return getNewSubscriptionOrderID();
+  };
+  function onApprove(data, actions) {
+    async function captureOrder() {
+      // transaction completed let the user rent the bike
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user}`,
+        },
+        body: JSON.stringify({ subscriptionPeriod }),
+      };
+      try {
+        const response = await fetch(
+          process.env.API_URL + "/users/subscription/" + orderID,
+          options
+        );
+        if (!response) throw new Error("Network Error");
+        if (!response?.ok) throw new Error("HTTP Error " + response.status);
+        setTransactionDialogOpen(false);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    captureOrder();
+  }
+
+  return (
+    <Box sx={{ p: 3 }}>
+      <PayPalButtons
+        style={{
+          shape: "pill",
+          color: "blue", //black
+          layout: "horizontal",
+          label: "pay",
+          tagline: false,
+        }}
+        forceReRender={[subscriptionPeriod]}
+        createOrder={createOrder}
+        onApprove={onApprove}
+      />
+    </Box>
+  );
+}
+
+function TransactionComplitionDilog({ open, completed }) {
+  return (
+    open && (
+      <Dialog open={open}>
+        <Stack sx={{ p: 3 }}>
+          <Box sx={{ display: "flex", mx: "auto", p: 4 }}>
+            <CircularProgress />
+          </Box>
+          <Typography variant="body1" gutterBottom>
+            Confirming transaction...
+          </Typography>
+        </Stack>
+      </Dialog>
+    )
+  );
+}
