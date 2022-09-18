@@ -79,6 +79,8 @@ export default function StartRentButton({ user, setUser, setRent }) {
           }}
           open={setPaymentDialogOpen}
           user={user}
+          setSubscription={setSubscription}
+          setUnlockDialogOpen={setUnlockDialogOpen}
         />
       )}
       {user && subscription && unlockDialogOpen && (

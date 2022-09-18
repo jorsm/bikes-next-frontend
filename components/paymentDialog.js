@@ -18,9 +18,15 @@ import DialogBase from "./dialogBase";
 import { Stack } from "@mui/system";
 import { AlignHorizontalCenter } from "@mui/icons-material";
 
-export default function PaymentDialog(props) {
+export default function PaymentDialog({
+  closeDilog,
+  open,
+  user,
+  setSubscription: setSubscription,
+  setUnlockDialogOpen,
+}) {
   const [paypalButton, setPaypalButton] = useState(null);
-  const [subscriptionPeriod, setsubscriptionPeriod] = useState("Day");
+  const [subscriptionPeriod, setSubscriptionPeriod] = useState("Day");
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
 
   const payPalCredentials = {
@@ -34,14 +40,21 @@ export default function PaymentDialog(props) {
     setPaypalButton(
       <PayPalButtonWrapper
         subscriptionPeriod={subscriptionPeriod}
-        user={props.user}
+        user={user}
         setTransactionDialogOpen={setTransactionDialogOpen}
+        closeDialog={closeDilog}
+        setSubscription={setSubscription}
+        setUnlockDialogOpen={setUnlockDialogOpen}
       />
     );
   }, [subscriptionPeriod]);
 
   return (
-    <DialogBase {...props} title="Sign up and start riding now!">
+    <DialogBase
+      open={open}
+      closeDialog={closeDilog}
+      title="Sign up and start riding now!"
+    >
       <Alert severity="info">
         <AlertTitle>
           Sandbox account for testing: <br></br>
@@ -58,7 +71,7 @@ export default function PaymentDialog(props) {
             title="Day"
             price="8.95"
             text="Rent up to 5 times in 24 hours"
-            onClick={() => setsubscriptionPeriod("Day")}
+            onClick={() => setSubscriptionPeriod("Day")}
             selectedPeriod={subscriptionPeriod}
           />
         </ListItem>
@@ -67,7 +80,7 @@ export default function PaymentDialog(props) {
             title="Week"
             price="44.95"
             text="Rent up to 5 times per day for 7 days"
-            onClick={() => setsubscriptionPeriod("Week")}
+            onClick={() => setSubscriptionPeriod("Week")}
             selectedPeriod={subscriptionPeriod}
           />
         </ListItem>
@@ -76,7 +89,7 @@ export default function PaymentDialog(props) {
             title="Month"
             price="109.95"
             text="Rent up to 5 times per day for 30 days"
-            onClick={() => setsubscriptionPeriod("Month")}
+            onClick={() => setSubscriptionPeriod("Month")}
             selectedPeriod={subscriptionPeriod}
           />
         </ListItem>
@@ -139,7 +152,10 @@ function PayPalButtonWrapper({
   subscriptionPeriod,
   user,
   setTransactionDialogOpen,
+  setSubscription,
+  setUnlockDialogOpen,
 }) {
+  //ToDo: MANAGE ERRORS
   let orderID = "";
   let createOrder = () => {
     async function getNewSubscriptionOrderID() {
@@ -188,7 +204,10 @@ function PayPalButtonWrapper({
         );
         if (!response) throw new Error("Network Error");
         if (!response?.ok) throw new Error("HTTP Error " + response.status);
+        const { subscriptionId } = await response.json();
         setTransactionDialogOpen(false);
+        setSubscription(subscriptionId);
+        setUnlockDialogOpen(true);
       } catch (error) {
         console.error(error);
       }
@@ -214,7 +233,7 @@ function PayPalButtonWrapper({
   );
 }
 
-function TransactionComplitionDilog({ open, completed }) {
+function TransactionComplitionDilog({ open }) {
   return (
     open && (
       <Dialog open={open}>
