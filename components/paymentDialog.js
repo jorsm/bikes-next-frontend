@@ -28,6 +28,7 @@ export default function PaymentDialog({
   const [paypalButton, setPaypalButton] = useState(null);
   const [subscriptionPeriod, setSubscriptionPeriod] = useState("Day");
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [error, setError] = useState(null);
 
   const payPalCredentials = {
     sandboxAccountEmail: "sb-f47wqs20698611@personal.example.com",
@@ -45,6 +46,7 @@ export default function PaymentDialog({
         closeDialog={closeDilog}
         setSubscription={setSubscription}
         setUnlockDialogOpen={setUnlockDialogOpen}
+        setError={setError}
       />
     );
   }, [subscriptionPeriod]);
@@ -54,6 +56,7 @@ export default function PaymentDialog({
       open={open}
       closeDialog={closeDilog}
       title="Sign up and start riding now!"
+      error={error}
     >
       <Alert severity="info">
         <AlertTitle>
@@ -100,7 +103,13 @@ export default function PaymentDialog({
           currency: "EUR",
         }}
       >
-        {!paypalButton && <CircularProgress sx={{ justifySelf: "center" }} />}
+        {!paypalButton && (
+          <Box
+            sx={{ display: "flex", mx: "auto", p: 4, justifySelf: "center" }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
         {paypalButton}
       </PayPalScriptProvider>
     </DialogBase>
@@ -154,6 +163,7 @@ function PayPalButtonWrapper({
   setTransactionDialogOpen,
   setSubscription,
   setUnlockDialogOpen,
+  setError,
 }) {
   //ToDo: MANAGE ERRORS
   let orderID = "";
@@ -228,6 +238,11 @@ function PayPalButtonWrapper({
         forceReRender={[subscriptionPeriod]}
         createOrder={createOrder}
         onApprove={onApprove}
+        onError={() => {
+          console.error("PAYPAL ERROR");
+          setError("payment failed...");
+          setTransactionDialogOpen(false);
+        }}
       />
     </Box>
   );

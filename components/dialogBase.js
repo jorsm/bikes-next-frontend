@@ -1,18 +1,30 @@
 import * as React from "react";
-import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import Slide from "@mui/material/Slide";
-import IconButton from "@mui/material/IconButton";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import LockOpenRounded from "@mui/icons-material/LockOpenRounded";
-import { QrReader, UseQrReaderHook } from "react-qr-reader";
-import { Fab, FormControl, TextField, DialogTitle } from "@mui/material";
+import Close from "@mui/icons-material/Close";
+import {
+  Alert,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  Slide,
+  Typography,
+} from "@mui/material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function DialogBase({ closeDialog, open, title, children }) {
+export default function DialogBase({
+  closeDialog,
+  open,
+  title,
+  children,
+  error,
+}) {
+  const [errorText, setErrorText] = React.useState(null);
+  React.useEffect(() => {
+    setErrorText(error);
+  }, [error]);
   return (
     <Dialog
       fullScreen
@@ -33,6 +45,25 @@ export default function DialogBase({ closeDialog, open, title, children }) {
           {title || ""}
         </Typography>
       </DialogTitle>
+      {errorText && (
+        <Alert
+          severity="error"
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => {
+                setErrorText(null);
+              }}
+            >
+              <Close fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          {error.toString()}
+        </Alert>
+      )}
       {children}
     </Dialog>
   );

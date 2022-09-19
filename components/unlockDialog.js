@@ -77,7 +77,7 @@ export default function UnlockDialog({ closeDialog, open, user, setRent }) {
   };
 
   return (
-    <DialogBase {...dialogProps}>
+    <DialogBase {...dialogProps} error={error}>
       {showQR && (
         <QrReader
           {...qrProps}

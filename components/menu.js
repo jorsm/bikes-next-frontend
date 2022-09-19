@@ -114,10 +114,7 @@ export default function Menu({ open, toggleDrawer, user, logout }) {
               p: 3,
               alignContent: "right",
             }}
-          >
-            <Typography variant="h6">your Family-Code</Typography>
-            <Typography variant="h6">000000</Typography>
-          </Paper>
+          ></Paper>
         )}
       </Box>
     </SwipeableDrawer>

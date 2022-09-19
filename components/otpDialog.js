@@ -99,26 +99,7 @@ export default function OtpDialog({
   //# component
   return (
     <div>
-      <DialogBase {...dialogProps}>
-        {error && (
-          <Alert
-            severity="error"
-            action={
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={() => {
-                  setError(null);
-                }}
-              >
-                <Close fontSize="inherit" />
-              </IconButton>
-            }
-          >
-            {error.toString()}
-          </Alert>
-        )}
+      <DialogBase {...dialogProps} error={error}>
         <Alert severity="info">
           <AlertTitle>SMS Received:</AlertTitle>
           your OTP code is {correctOtp}
