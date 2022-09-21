@@ -89,7 +89,7 @@ export default function StartRentMap() {
       )}
       <MyLocationFab setLocation={setLocation} />
       <LoadScriptNext
-        googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+        googleMapsApiKey={"AIzaSyByRWL8jSSw4bcYHcoGKHDwS_rUFyEMtRo"}
       >
         <GoogleMap
           mapContainerClassName="map-continer"
@@ -104,6 +104,14 @@ export default function StartRentMap() {
             {stations &&
               stations.map((station) => {
                 const { id, bikes, location } = station;
+                return (
+                  <Marker
+                    position={{
+                      lat: location.latitude,
+                      lng: location.longitude,
+                    }}
+                  />
+                );
               })}
           </>
         </GoogleMap>
