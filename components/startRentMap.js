@@ -110,6 +110,7 @@ export default function StartRentMap() {
                       lat: location.latitude,
                       lng: location.longitude,
                     }}
+                    key={id}
                   />
                 );
               })}
