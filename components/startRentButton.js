@@ -94,6 +94,7 @@ export default function StartRentButton({ user, setUser, setRent }) {
         />
       )}
       <Fab
+        color="primary"
         variant="extended"
         sx={style}
         onClick={() => {

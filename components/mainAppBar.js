@@ -1,5 +1,5 @@
 import { MenuRounded } from "@mui/icons-material";
-import { Box, AppBar, Toolbar, IconButton } from "@mui/material";
+import { Box, AppBar, Toolbar, IconButton, Typography } from "@mui/material";
 import Menu from "./menu";
 import { useState } from "react";
 
@@ -23,6 +23,9 @@ export default function MainAppBar({ logout, user }) {
               onClick={() => setMenuOpen(!menuOpen)}
             >
               <MenuRounded />
+              <Typography sx={{ ml: 2, p: 0 }} variant="overline">
+                Ledro Bikes
+              </Typography>
             </IconButton>
           </Toolbar>
         </AppBar>

@@ -1,16 +1,23 @@
 import {
+  Avatar,
   Box,
+  CircularProgress,
+  Fab,
+  Divider,
   List,
   ListItem,
   ListItemText,
-  Divider,
   ListItemAvatar,
-  Avatar,
-  CircularProgress,
   Grid,
 } from "@mui/material";
-import { useState, useEffect } from "react";
-import LocalParkingRoundedIcon from "@mui/icons-material/LocalParkingRounded";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { MyLocationRounded } from "@mui/icons-material";
+import {
+  useGoogleMap,
+  GoogleMap,
+  LoadScriptNext,
+  Marker,
+} from "@react-google-maps/api";
 
 const style = {
   display: "flex",
@@ -23,6 +30,10 @@ export default function StartRentMap() {
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [location, setLocation] = useState({
+    lat: 45.8866094,
+    lng: 10.7299675,
+  });
 
   useEffect(() => {
     const fetchStations = async () => {
@@ -56,8 +67,18 @@ export default function StartRentMap() {
     fetchStations().catch(console.error);
   }, []);
 
+  const containerStyle = {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: -1,
+  };
+  const options = { disableDefaultUI: true };
+
   return (
-    <List component="nav" aria-label="stations">
+    <>
       {loading && (
         <Box sx={style}>
           <CircularProgress />
@@ -66,13 +87,31 @@ export default function StartRentMap() {
       {error && (
         <div>{`There is a problem fetching the post data - ${error}`}</div>
       )}
-      {stations &&
-        stations.map((station) => {
-          const { id, bikes, location } = station;
-          console.log(station);
-          return <Station bikes={bikes} key={id} location={location} />;
-        })}
-    </List>
+      <MyLocationFab setLocation={setLocation} />
+      <LoadScriptNext
+        googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+      >
+        <GoogleMap
+          mapContainerClassName="map-continer"
+          mapContainerStyle={containerStyle}
+          center={location}
+          options={options}
+          zoom={15}
+          clickableIcons={false}
+        >
+          {/* Child components, such as markers, info windows, etc. */}
+          <>
+            {stations &&
+              stations.map((station) => {
+                const { id, bikes, location } = station;
+              })}
+          </>
+        </GoogleMap>
+      </LoadScriptNext>
+      <Box sx={{ display: "flex" }}>
+        <Box className="map-continer" />
+      </Box>
+    </>
   );
 }
 
@@ -81,11 +120,6 @@ function Station(props) {
   return (
     <>
       <ListItem button>
-        <ListItemAvatar>
-          <Avatar>
-            <LocalParkingRoundedIcon />
-          </Avatar>
-        </ListItemAvatar>
         <ListItemText
           primary={bikes.length + "bikes avaiable here"}
           secondary={JSON.stringify(location)}
@@ -95,3 +129,26 @@ function Station(props) {
     </>
   );
 }
+
+const MyLocationFab = ({ setLocation }) => {
+  return (
+    <Fab
+      size="small"
+      color="primary"
+      aria-label="center position"
+      sx={{ position: "absolute", bottom: "19%", right: "8%" }}
+      onClick={() => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            let { latitude, longitude } = position.coords;
+            setLocation({ lat: latitude, lng: longitude });
+          },
+          (error) => console.error(error),
+          { enableHighAccuracy: true }
+        );
+      }}
+    >
+      <MyLocationRounded />
+    </Fab>
+  );
+};

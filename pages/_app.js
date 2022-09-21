@@ -64,7 +64,6 @@ function App() {
       <Box>
         {!rent && (
           <>
-            <p>map showing stations where bikes are avaiable</p>
             <StartRentMap />
             <StartRentButton user={user} setUser={setUser} setRent={setRent} />
           </>

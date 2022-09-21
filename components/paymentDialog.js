@@ -16,7 +16,6 @@ import {
 } from "@mui/material";
 import DialogBase from "./dialogBase";
 import { Stack } from "@mui/system";
-import { AlignHorizontalCenter } from "@mui/icons-material";
 
 export default function PaymentDialog({
   closeDilog,
@@ -33,8 +32,7 @@ export default function PaymentDialog({
   const payPalCredentials = {
     sandboxAccountEmail: "sb-f47wqs20698611@personal.example.com",
     sandboxAccountPassword: "<_-3zCK*",
-    clientID:
-      "AaRJRMeGZjupaPdMC9ogvD2c84Mx5L-D-KHG5TUpltTgn_qIaT2fPg_rtXwIUfidRmFO8hrX-7cmv2La",
+    clientID: process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_CLIENT_ID,
   };
 
   useEffect(() => {

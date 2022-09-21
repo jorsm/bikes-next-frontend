@@ -1,6 +1,6 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import SwipeableDrawer from "@mui/material/SwipeableDrawer";
+import Drawer from "@mui/material/SwipeableDrawer";
 import Button from "@mui/material/Button";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
@@ -26,14 +26,17 @@ export default function Menu({ open, toggleDrawer, user, logout }) {
   const toggle = (_open) => (event) => toggleDrawer(_open);
 
   return (
-    <SwipeableDrawer
+    <Drawer
+      disableSwipeToOpen
       className="no-fastclick"
-      anchor="right"
+      anchor="left"
       open={open}
       onClose={toggle(false)}
       onOpen={toggle(true)}
-      disableBackdropTransition={!iOS}
+      hysteresis={0.1}
+      minFlingVelocity={200}
       disableDiscovery={iOS}
+      keepMounted
     >
       <Box
         sx={{ width: 250 }}
@@ -91,32 +94,20 @@ export default function Menu({ open, toggleDrawer, user, logout }) {
             </ListItem>
           )}
           {user && <Divider /> && (
-              <ListItem key="wifc" disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>
-                    <GroupAddRoundedIcon />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="family"
-                    secondary="add members to your subscription"
-                  />
-                </ListItemButton>
-              </ListItem>
-            ) && <Divider />}
+            <ListItem key="wifc" disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  <GroupAddRoundedIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="family"
+                  secondary="add members to your subscription"
+                />
+              </ListItemButton>
+            </ListItem>
+          )}
         </List>
-        {user && (
-          <Paper
-            elevation={3}
-            sx={{
-              position: "fixed",
-              bottom: 0,
-              width: "100%",
-              p: 3,
-              alignContent: "right",
-            }}
-          ></Paper>
-        )}
       </Box>
-    </SwipeableDrawer>
+    </Drawer>
   );
 }
